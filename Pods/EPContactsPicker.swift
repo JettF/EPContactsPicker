@@ -345,12 +345,10 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     
     func onTouchCancelButton() {
         contactDelegate?.epContactPicker(self, didCancel: NSError(domain: "EPContactPickerErrorDomain", code: 2, userInfo: [ NSLocalizedDescriptionKey: "User Canceled Selection"]))
-        dismiss(animated: true, completion: nil)
     }
     
     func onTouchDoneButton() {
         contactDelegate?.epContactPicker(self, didSelectMultipleContacts: selectedContacts)
-        dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Search Actions

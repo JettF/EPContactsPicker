@@ -9,7 +9,6 @@
 import UIKit
 import Contacts
 
-
 public protocol EPPickerDelegate: class {
     func epContactPicker(_: EPContactsPicker, didContactFetchFailed error: NSError)
     func epContactPicker(_: EPContactsPicker, didCancel error: NSError)

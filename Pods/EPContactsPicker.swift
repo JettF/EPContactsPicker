@@ -118,7 +118,7 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     }
     
     // MARK: - Initializers
-    convenience public init(delegate: EPPickerDelegate?, showIndexBar: Bool) {
+    convenience public init(delegate: EPPickerDelegate?, showIndexBar: Bool = true) {
         self.init(delegate: delegate, multiSelection: false)
         shouldShowIndexBar = showIndexBar
     }

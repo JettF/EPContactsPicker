@@ -38,8 +38,9 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     // MARK: - Properties
     
     open var contactDelegate: EPPickerDelegate?
+    public var shouldShowIndexBar = true
+    public internal(set) var resultSearchController = UISearchController()
     var contactsStore: CNContactStore?
-    var resultSearchController = UISearchController()
     var orderedContacts = [String: [CNContact]]() //Contacts ordered in dicitonary alphabetically
     var sortedContactKeys = [String]()
     
@@ -112,8 +113,9 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
 
     // MARK: - Initializers
   
-    convenience public init(delegate: EPPickerDelegate?) {
+    convenience public init(delegate: EPPickerDelegate?, showIndexBar: Bool) {
         self.init(delegate: delegate, multiSelection: false)
+        shouldShowIndexBar = showIndexBar
     }
     
     convenience public init(delegate: EPPickerDelegate?, multiSelection : Bool) {
@@ -308,13 +310,16 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     
     override open func tableView(_ tableView: UITableView, sectionForSectionIndexTitle title: String, at index: Int) -> Int {
         if resultSearchController.isActive { return 0 }
-        tableView.scrollToRow(at: IndexPath(row: 0, section: index), at: UITableViewScrollPosition.top , animated: false)        
         return sortedContactKeys.index(of: title)!
     }
     
     override  open func sectionIndexTitles(for tableView: UITableView) -> [String]? {
-        if resultSearchController.isActive { return nil }
-        return sortedContactKeys
+        if shouldShowIndexBar {
+            if resultSearchController.isActive { return nil }
+            return sortedContactKeys
+        } else {
+            return nil
+        }
     }
 
     override open func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {

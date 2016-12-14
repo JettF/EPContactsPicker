@@ -312,6 +312,7 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
         }
         else {
             //Single selection code
+            if resultSearchController.isActive { resultSearchController.isActive = false }
 			self.contactDelegate?.epContactPicker(self, didSelectContact: selectedContact)
         }
     }

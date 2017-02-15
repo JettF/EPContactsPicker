@@ -59,6 +59,15 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     /// The contact value type to display in the cells' subtitle labels.
     public let subtitleCellValue: SubtitleCellValue
     
+    /// The order that the contacts should be sorted.
+    public var sortOrder: CNContactSortOrder = CNContactSortOrder.userDefault {
+        didSet {
+            if viewIfLoaded != nil {
+                self.reloadContacts()
+            }
+        }
+    }
+    
     //Enables custom filtering of contacts.
     public var shouldIncludeContact: ((CNContact) -> Bool)? {
         didSet {
@@ -160,7 +169,7 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
         })
     }
     
-    func getContacts(_ completion:  @escaping ContactsHandler) {
+    private func getContacts(_ completion:  @escaping ContactsHandler) {
         let error = NSError(domain: "EPContactPickerErrorDomain", code: 1, userInfo: [NSLocalizedDescriptionKey: "No Contacts Access"])
         
         switch CNContactStore.authorizationStatus(for: CNEntityType.contacts) {
@@ -201,11 +210,11 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
             let contactFetchRequest = CNContactFetchRequest(keysToFetch: allowedContactKeys())
             
             do {
-                try contactsStore.enumerateContacts(with: contactFetchRequest, usingBlock: { (contact, stop) -> Void in
+                try contactsStore.enumerateContacts(with: contactFetchRequest, usingBlock: { [weak self] (contact, stop) -> Void in
                     
                     //Adds the `contact` to the `contactsArray` if the closure returns true.
                     //If the closure doesn't exist, then the contact is added.
-                    if let shouldIncludeContactClosure = self.shouldIncludeContact, !shouldIncludeContactClosure(contact) {
+                    if let shouldIncludeContactClosure = self?.shouldIncludeContact, !shouldIncludeContactClosure(contact) {
                         return
                     }
                     
@@ -213,17 +222,15 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
                     
                     //Ordering contacts based on alphabets in firstname
                     var key: String = "#"
+                    
                     //If ordering has to be happening via family name change it here.
-                    if let firstLetter = contact.givenName[0..<1] , firstLetter.containsAlphabets() {
+                    if let firstLetter = self?.firstLetter(for: contact) {
                         key = firstLetter.uppercased()
                     }
-                    var contacts = [CNContact]()
                     
-                    if let segregatedContact = orderedContacts[key] {
-                        contacts = segregatedContact
-                    }
-                    contacts.append(contact)
-                    orderedContacts[key] = contacts
+                    var contactsForKey = orderedContacts[key] ?? [CNContact]()
+                    contactsForKey.append(contact)
+                    orderedContacts[key] = contactsForKey
                     
                 })
                 
@@ -234,13 +241,35 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
                     self.sortedContactKeys.append("#")
                 }
                 completion(contactsArray, nil)
-            }
-                //Catching exception as enumerateContactsWithFetchRequest can throw errors
-            catch let error as NSError {
+                
+            } catch let error as NSError {
+                /// Catching exception as enumerateContactsWithFetchRequest can throw errors
                 print(error.localizedDescription)
             }
             
         }
+    }
+    
+    private func firstLetter(for contact: CNContact) -> String? {
+        var firstLetter: String? = nil
+        
+        switch sortOrder {
+            
+        case .userDefault where CNContactsUserDefaults.shared().sortOrder == .familyName:
+            fallthrough
+        case .familyName:
+            firstLetter = contact.familyName[0..<1]
+            
+        case .userDefault where CNContactsUserDefaults.shared().sortOrder == .givenName:
+            fallthrough
+        case .givenName:
+            fallthrough
+        default:
+            firstLetter = contact.givenName[0..<1]
+        }
+        
+        guard let letter = firstLetter, letter.containsAlphabets() else { return nil }
+        return letter
     }
     
     func allowedContactKeys() -> [CNKeyDescriptor]{

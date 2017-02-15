@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   s.name             = "EPContactsPicker-Zorts"
   s.module_name      = "EPContactsPicker"
-  s.version          = "2.1.1"
+  s.version          = "2.2.0"
   s.summary          = "A contacts picker component for iOS written in swift using new contacts framwork"
   s.description      = <<-DESC
 Features
 1. Single selection and multiselection option
-2. Making the secondary data to show as requested(Phonenumbers, Emails, Birthday and Organisation)
+2. Making the secondary data to show as requested(Phone numbers, Emails, Birthday, or Organization)
 3. Section Indexes to easily navigate throught the contacts
 4. Showing initials when image is not available
 5. EPContact object to get the properties of the contacts

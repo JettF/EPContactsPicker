@@ -160,13 +160,15 @@ open class EPContactsPicker: UITableViewController, UISearchResultsUpdating, UIS
     // MARK: - Contact Operations
     
     open func reloadContacts() {
-        getContacts( {(contacts, error) in
-            if (error == nil) {
-                DispatchQueue.main.async(execute: {
-                    self.tableView.reloadData()
-                })
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.getContacts { [weak self] (contacts, error) in
+                if (error == nil) {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.tableView.reloadData()
+                    }
+                }
             }
-        })
+        }
     }
     
     private func getContacts(_ completion:  @escaping ContactsHandler) {
